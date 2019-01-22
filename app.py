@@ -1,3 +1,4 @@
+import csv
 from sqlalchemy import create_engine
 from sqlalchemy.orm import scoped_session, sessionmaker
 
@@ -7,18 +8,20 @@ def main():
     db = scoped_session(sessionmaker(bind=engine))
 
     f = open("books.csv")
-	reader = csv.reader(f)
+    reader = csv.reader(f)
 
     for author in reader:
-        db.execute('INSERT INTO authors (name) VALUES (:name) {"name": author}')
+        db.execute('INSERT INTO authors (name) VALUES (:name)', {"name": author})
     db.commit()
 
     for isbn, title, author, year in reader:
-        author_id = db.execute('SELECT id FROM authors WHERE name=:author){"author": author}')
+        author_id = db.execute('SELECT id FROM authors WHERE name=:author)', {"author": author})
+
         db.execute('INSERT INTO books (author_id, isbn, title, year) VALUES'
-                   ' (:author_id, :isbn, :title, :year) {"author_id": author_id,'
-                   ' "isbn": isbn, "title": title, "year": year')
+                   ' (:author_id, :isbn, :title, :year)', {"author_id": author_id["id"],
+                   "isbn": isbn, "title": title, "year": year})
     db.commit()
 
-if __name__ == “__main__”:
+
+if __name__ == "__main__":
 	main()
