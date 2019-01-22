@@ -9,10 +9,16 @@ def main():
 
     f = open("books.csv")
     reader = csv.reader(f)
+    count = 0
 
-    for author in reader:
-        db.execute('INSERT INTO authors (name) VALUES (:name)', {"name": author})
+    for isbn, title, author, year in reader:
+        try:
+            db.execute('INSERT INTO authors (name) VALUES (:name)', {"name": author})
+        except:
+            count+= 1
+            print(f"Duplicate Author {count} Detected")
     db.commit()
+    print("Authors added to database")
 
     for isbn, title, author, year in reader:
         author_id = db.execute('SELECT id FROM authors WHERE name=:author)', {"author": author})
@@ -21,7 +27,7 @@ def main():
                    ' (:author_id, :isbn, :title, :year)', {"author_id": author_id["id"],
                    "isbn": isbn, "title": title, "year": year})
     db.commit()
-
+    print("Books added to database")
 
 if __name__ == "__main__":
 	main()
