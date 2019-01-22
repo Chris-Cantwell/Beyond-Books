@@ -1,4 +1,5 @@
 import csv
+import sqlalchemy
 from sqlalchemy import create_engine
 from sqlalchemy.orm import scoped_session, sessionmaker
 
@@ -9,23 +10,34 @@ def main():
 
     f = open("books.csv")
     reader = csv.reader(f)
-    count = 0
+
+    authorList = set()
+    bookList = []
 
     for isbn, title, author, year in reader:
-        try:
-            db.execute('INSERT INTO authors (name) VALUES (:name)', {"name": author})
-        except:
-            count+= 1
-            print(f"Duplicate Author {count} Detected")
+        authorList.add(author)
+
+        book = {
+            "isbn": isbn,
+            "title": title,
+            "author": author,
+            "year": year
+            }
+        bookList.append(book)
+
+    for author in authorList:
+        db.execute('INSERT INTO authors (name) VALUES (:name)', {"name": author})
+
     db.commit()
     print("Authors added to database")
 
-    for isbn, title, author, year in reader:
-        author_id = db.execute('SELECT id FROM authors WHERE name=:author)', {"author": author})
+    for book in bookList:
+        author_id = db.execute('SELECT id FROM authors WHERE name=:author', {"author": book['author']}).fetchone()
 
         db.execute('INSERT INTO books (author_id, isbn, title, year) VALUES'
-                   ' (:author_id, :isbn, :title, :year)', {"author_id": author_id["id"],
-                   "isbn": isbn, "title": title, "year": year})
+                   ' (:author_id, :isbn, :title, :year)', {"author_id": author_id.id,
+                   "isbn": book['isbn'], "title": book['title'], "year": book['year']})
+
     db.commit()
     print("Books added to database")
 
