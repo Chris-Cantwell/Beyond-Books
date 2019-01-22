@@ -10,7 +10,7 @@ def main():
 
     f = open("books.csv")
     reader = csv.reader(f)
-
+    # Puts authors in a set
     authorList = set()
     bookList = []
 
